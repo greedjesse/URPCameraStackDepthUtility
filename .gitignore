@@ -26,6 +26,7 @@
 /Assets/InputSystem_Actions.inputactions.meta
 /Assets/Readme.asset
 /Assets/Readme.asset.meta
+/Assets/URPCameraStackDepthUtility.meta
 
 # By default unity supports Blender asset imports, *.blend1 blender files do not need to be commited to version control.
 *.blend1
