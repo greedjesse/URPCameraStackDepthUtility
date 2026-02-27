@@ -15,6 +15,7 @@ MonoBehaviour:
   m_Active: 1
   m_PassEvent: 500
   m_DisplayMaterial: {fileID: 2100000, guid: ec2f028ffe8228748833f0db05488f53, type: 2}
+  m_ActiveCameras: 010100
   m_MergeShader: {fileID: -6465566751694194690, guid: 7656f081b4d7696419b56dc96fc55104, type: 3}
 --- !u!114 &11400000
 MonoBehaviour:
