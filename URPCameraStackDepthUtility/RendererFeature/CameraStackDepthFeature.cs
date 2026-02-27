@@ -276,7 +276,9 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
     // Called when inspector value change.
     void OnValidate()
     {
-        var mainCamera = TryGetMainCamera();
+        // var mainCamera = TryGetMainCamera();
+        var mainCamera = Camera.main;  // Here, we use Camera.main instead of TryGetMainCamera() to prevent
+                                       // logging warning when project first opened.
         if (!mainCamera) return;
 
         var additionalData = mainCamera.GetUniversalAdditionalCameraData();
