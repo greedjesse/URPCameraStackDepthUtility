@@ -175,10 +175,9 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
     private List<RTHandle> m_DepthTextureStack;
     private List<RTHandle> m_MergeTextureStack;
 
-    private bool m_NeedRefreshStack;
-
     CameraStackDepthPass m_CameraStackCameraStackDepthPass;
     
+
     /// <inheritdoc/>
     public override void Create()
     {
@@ -226,12 +225,6 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
                              "Missing Merge Material. Please assign 'URPCameraStackDepthUtility/Shaders/Merge Depth.mat' " +
                              "in the Renderer Feature settings.");
             return;
-        }
-
-        if (m_NeedRefreshStack)
-        {
-            RefreshStackIfNeeded();
-            m_NeedRefreshStack = false;
         }
         
         // Get camera count.
@@ -283,18 +276,19 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
         
         if (!HasOverlayCamera(additionalData)) return;
 
-        m_NeedRefreshStack = true;
+        RefreshStackIfNeeded();
     }
 
     private static Camera TryGetMainCamera()
     {
         var mainCamera = Camera.main;
         if (mainCamera) return mainCamera;
-
+        
         Debug.LogWarning(LogPrefix +
                          "No Main Camera found in the scene. " +
                          "Ensure a camera is tagged as 'MainCamera'.");
         return null;
+
     }
 
     private static bool HasOverlayCamera(UniversalAdditionalCameraData data)
@@ -305,6 +299,7 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
                          "No Overlay Cameras detected in the Base Camera stack. " +
                          "Depth stacking requires Camera Stacking with at least one Overlay Camera.");
         return false;
+
     }
 
     private static bool HasActiveCamera(List<bool> activeCameras)
