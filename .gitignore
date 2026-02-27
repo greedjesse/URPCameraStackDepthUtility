@@ -12,6 +12,21 @@
 /[Uu]ser[Ss]ettings/
 *.log
 
+# Only keep Assets/URPCameraStackDepthUtility - ignore everything else
+/.idea/
+/Packages/
+/ProjectSettings/
+/Assets/Scenes/
+/Assets/Scenes.meta
+/Assets/Settings/
+/Assets/Settings.meta
+/Assets/TutorialInfo/
+/Assets/TutorialInfo.meta
+/Assets/InputSystem_Actions.inputactions
+/Assets/InputSystem_Actions.inputactions.meta
+/Assets/Readme.asset
+/Assets/Readme.asset.meta
+
 # By default unity supports Blender asset imports, *.blend1 blender files do not need to be commited to version control.
 *.blend1
 *.blend1.meta
