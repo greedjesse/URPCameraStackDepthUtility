@@ -1,4 +1,4 @@
-# URPCameraStackDepthUtility (Work in progress)
+# URPCameraStackDepthUtility
 
 A custom URP Renderer Feature for Unity 6+ that provides access to depth textures from camera stacking.  
 It preserves depth for selected cameras and merges them progressively using a configurable merge mode.
