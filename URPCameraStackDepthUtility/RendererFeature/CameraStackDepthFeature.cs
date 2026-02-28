@@ -174,9 +174,12 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
     private Material m_BlitMaterial;
     
     [Header("Merge Settings")]
-    [SerializeField] [Tooltip("Select how stacked camera depth textures are combined.\n\n" +
-         "Overlay: Front camera depth overrides back depth.\n" +
-         "Maximum: Uses the larger depth value between layers.")]
+    [SerializeField] 
+    [Tooltip("Select how stacked camera depth textures are combined.\n\n" +
+         "- Overlay -\n" +
+         "Front camera depth overrides back depth.\n" +
+         "- Maximum -\n" +
+         "Uses the larger depth value between layers.")]
     private MergeMode m_MergeMode = MergeMode.Maximum;
 
     [Header("Camera")]

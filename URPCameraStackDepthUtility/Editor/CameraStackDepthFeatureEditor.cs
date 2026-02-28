@@ -13,7 +13,14 @@ public class CameraStackDepthFeatureEditor : Editor
         DrawPropertiesExcluding(serializedObject, "m_SelectedCameras");
 
         EditorGUILayout.Space(10);
-        EditorGUILayout.LabelField("Selected Cameras", EditorStyles.boldLabel);
+        EditorGUILayout.LabelField(
+            new GUIContent(
+                "Selected Cameras",
+                "Specifies which cameras in the stack are included in depth capture and merge processing.\n\n" +
+                "The order follows the camera stack: Base camera first, followed by Overlay cameras."
+            ),
+            EditorStyles.boldLabel
+        );
 
         var feature = (CameraStackDepthFeature)target;
         var selectedProp = serializedObject.FindProperty("m_SelectedCameras");
