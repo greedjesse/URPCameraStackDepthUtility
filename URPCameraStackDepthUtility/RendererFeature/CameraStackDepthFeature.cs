@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
@@ -134,6 +132,7 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
 
                         // Set material.
                         passData.material = m_MergeMaterial;
+                        
                         builder.UseTexture(passData.backDepth);
                         builder.UseTexture(passData.frontDepth);
 
