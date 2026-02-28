@@ -13,6 +13,7 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
 {
     class CameraStackDepthPass : ScriptableRenderPass
     {
+        // ReSharper disable InconsistentNaming
         List<Camera> m_CameraStack;
         private List<RTHandle> m_DepthTextureStack;
         private List<RTHandle> m_MergeTextureStack;
@@ -21,19 +22,19 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
         private Material m_DisplayMaterial;
         private Material m_MergeMaterial;
 
-        class DepthPassData
+        private class DepthPassData
         {
             public TextureHandle source;
         }
 
-        class MergePassData
+        private class MergePassData
         {
             public TextureHandle backDepth;
             public TextureHandle frontDepth;
             public Material material;
         }
 
-        static void ExecuteDepthPreservationPass(DepthPassData data, RasterGraphContext context)
+        private static void ExecuteDepthPreservationPass(DepthPassData data, RasterGraphContext context)
         {
             // Blit current camera depth to render target.
             Blitter.BlitTexture(context.cmd, data.source, new Vector4(1, 1, 0, 0), 0, false);
@@ -41,7 +42,7 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
             // RTHandles.Release(data.source);
         }
 
-        static void ExecuteDepthMergePass(MergePassData data, RasterGraphContext context)
+        private static void ExecuteDepthMergePass(MergePassData data, RasterGraphContext context)
         {
             // Set material textures.
             data.material.SetTexture(BackDepthTex, data.backDepth);
@@ -125,14 +126,9 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
                         builder.SetRenderAttachment(destination, 0);
 
                         // Set depth to merge.
-                        if (selectedCameraId == 1)
-                        {
-                            passData.backDepth = renderGraph.ImportTexture(m_DepthTextureStack[0]);
-                        }
-                        else
-                        {
-                            passData.backDepth = renderGraph.ImportTexture(m_MergeTextureStack[selectedCameraId - 2]);
-                        }
+                        passData.backDepth = renderGraph.ImportTexture(selectedCameraId == 1
+                            ? m_DepthTextureStack[0]
+                            : m_MergeTextureStack[selectedCameraId - 2]);
 
                         passData.frontDepth = renderGraph.ImportTexture(m_DepthTextureStack[selectedCameraId]);
 
@@ -201,7 +197,7 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
 
     private bool m_NeedRefreshStack;
 
-    CameraStackDepthPass m_CameraStackCameraStackDepthPass;
+    private CameraStackDepthPass m_CameraStackCameraStackDepthPass;
     
     /// <inheritdoc/>
     public override void Create()
@@ -215,7 +211,7 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
         // Get shader.
         if (!m_MergeShader)
         {
-            m_MergeShader = Shader.Find("Shader Graphs/Merge Depth");
+            m_MergeShader = Shader.Find($"Shader Graphs/Merge Depth");
             if (!m_MergeShader)
             {
                 Debug.LogWarning(LogPrefix + 
@@ -298,8 +294,6 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
         var mainCamera = Camera.main;  // Here, we use Camera.main instead of TryGetMainCamera() to prevent
                                        // logging warning when project first opened.
         if (!mainCamera) return;
-
-        var additionalData = mainCamera.GetUniversalAdditionalCameraData();
 
         m_NeedRefreshStack = true;
     }
