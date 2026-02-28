@@ -215,7 +215,7 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
             {
                 Debug.LogWarning(LogPrefix + 
                                  "Included shader 'Merge Depth' could not be found. " +
-                                 "Ensure the URPCameraStackDepthUtility shader files are present " +
+                                 "Ensure the shader files in the 'Shaders/' directory are present " +
                                  "and have not been moved or deleted.");
                 return;
             }
@@ -235,9 +235,9 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
         if (!m_BlitMaterial)
         {
             Debug.LogWarning(LogPrefix +
-                             "Missing Display Material. Please assign 'URPCameraStackDepthUtility/Shaders/Blit To Screen.mat' " +
+                             "Missing Display Material. Please assign 'Shaders/Blit To Screen.mat' " +
                              "in the Renderer Feature settings. You may replace it with your own material or " +
-                             "rewrite the renderer feature and passe to meet your need.");
+                             "rewrite the renderer feature and pass to meet your need.");
             return;
         }
         
