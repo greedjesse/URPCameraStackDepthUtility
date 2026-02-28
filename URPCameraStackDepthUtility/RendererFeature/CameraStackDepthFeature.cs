@@ -16,7 +16,7 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
         List<Camera> m_CameraStack;
         private List<RTHandle> m_DepthTextureStack;
         private List<RTHandle> m_MergeTextureStack;
-        private List<bool> m_ActiveCameras;
+        private List<bool> m_SelectedCameras;
 
         private Material m_DisplayMaterial;
         private Material m_MergeMaterial;
@@ -50,11 +50,11 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
                 0); // The source doesn't matter
         }
 
-        public void Setup(List<Camera> cameraStack, List<bool> activeCameras, ref List<RTHandle> depthTextureStack,
+        public void Setup(List<Camera> cameraStack, List<bool> selectedCameras, ref List<RTHandle> depthTextureStack,
             ref List<RTHandle> mergeTextureStack, Material displayMaterial, Material mergeMaterial)
         {
             m_CameraStack = cameraStack;
-            m_ActiveCameras = activeCameras;
+            m_SelectedCameras = selectedCameras;
             m_DepthTextureStack = depthTextureStack;
             m_MergeTextureStack = mergeTextureStack;
 
@@ -73,26 +73,26 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
             if (cameraData.camera.cameraType != CameraType.Game) return;
 
             // Get camera id.
-            var activeCameraCount = m_ActiveCameras.Count(active => active);
+            var selectedCameraCount = m_SelectedCameras.Count(selected=> selected);
 
-            var activeCameraId = -1;
+            var selectedCameraId = -1;
             var cameraId = -1;
-            var active = false;
-            for (int i = 0; i < m_ActiveCameras.Count; i++)
+            var selected = false;
+            for (int i = 0; i < m_SelectedCameras.Count; i++)
             {
                 cameraId++;
-                if (m_ActiveCameras[i])
+                if (m_SelectedCameras[i])
                 {
-                    activeCameraId++;
+                    selectedCameraId++;
                     if (cameraData.camera == m_CameraStack[i])
                     {
-                        active = true;
+                        selected = true;
                         break;
                     }
                 }
             }
 
-            if (active)
+            if (selected)
             {
                 // Debug.Log($"RenderGraph called. Camera Name: {cameraData.camera.name}. Camera ID: {cameraId}");
 
@@ -101,7 +101,7 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
                        renderGraph.AddRasterRenderPass<DepthPassData>("Depth Preservation Pass", out var passData))
                 {
                     // Set render target.
-                    var destination = renderGraph.ImportTexture(m_DepthTextureStack[activeCameraId]);
+                    var destination = renderGraph.ImportTexture(m_DepthTextureStack[selectedCameraId]);
                     builder.SetRenderAttachment(destination, 0);
 
                     // Set depth texture.
@@ -115,26 +115,26 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
                 }
 
                 // --- Depth Merge Pass ---
-                if (activeCameraId != 0) // Skip first camera.
+                if (selectedCameraId != 0) // Skip first camera.
                 {
                     using (var builder =
                            renderGraph.AddRasterRenderPass<MergePassData>("Depth Merge Pass", out var passData))
                     {
                         // Set render target.
-                        var destination = renderGraph.ImportTexture(m_MergeTextureStack[activeCameraId - 1]);
+                        var destination = renderGraph.ImportTexture(m_MergeTextureStack[selectedCameraId - 1]);
                         builder.SetRenderAttachment(destination, 0);
 
                         // Set depth to merge.
-                        if (activeCameraId == 1)
+                        if (selectedCameraId == 1)
                         {
                             passData.backDepth = renderGraph.ImportTexture(m_DepthTextureStack[0]);
                         }
                         else
                         {
-                            passData.backDepth = renderGraph.ImportTexture(m_MergeTextureStack[activeCameraId - 2]);
+                            passData.backDepth = renderGraph.ImportTexture(m_MergeTextureStack[selectedCameraId - 2]);
                         }
 
-                        passData.frontDepth = renderGraph.ImportTexture(m_DepthTextureStack[activeCameraId]);
+                        passData.frontDepth = renderGraph.ImportTexture(m_DepthTextureStack[selectedCameraId]);
 
                         // Set material.
                         passData.material = m_MergeMaterial;
@@ -151,7 +151,7 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
             if (cameraId == m_CameraStack.Count - 1) // Only called in the last camera.
             {
                 var source =
-                    renderGraph.ImportTexture(activeCameraCount > 1 ? m_MergeTextureStack[^1] : m_DepthTextureStack[0]);
+                    renderGraph.ImportTexture(selectedCameraCount > 1 ? m_MergeTextureStack[^1] : m_DepthTextureStack[0]);
 
                 RenderGraphUtils.BlitMaterialParameters param = new(source, resourceData.activeColorTexture,
                     m_DisplayMaterial, 0);
@@ -181,7 +181,7 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
 
     [Header("Camera")]
     [SerializeField]
-    private List<bool> m_ActiveCameras = new List<bool>();
+    private List<bool> m_SelectedCameras = new List<bool>();
 
     [HideInInspector] [SerializeField]
     private Shader m_MergeShader;
@@ -254,18 +254,18 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
         if (m_CameraStack == null)
             m_CameraStack = new List<Camera>();
         
-        if (!HasActiveCamera(m_ActiveCameras)) return;
+        if (!HasSelectedCamera(m_SelectedCameras)) return;
 
         m_CameraStack.Clear();
         m_CameraStack.Add(mainCamera);
         m_CameraStack.AddRange(additionalData.cameraStack);
             
-        RefreshActiveCamerasListIfNeeded(additionalData);
+        RefreshSelectedCamerasListIfNeeded(additionalData);
         RefreshStackIfNeeded();
         UpdateMergeKeyword();
         
         // Set up the correct data for the render pass, and transfers the data from the renderer feature to the render pass.
-        m_CameraStackCameraStackDepthPass.Setup(m_CameraStack, m_ActiveCameras, ref m_DepthTextureStack, ref m_MergeTextureStack, m_BlitMaterial, m_MergeMaterial);
+        m_CameraStackCameraStackDepthPass.Setup(m_CameraStack, m_SelectedCameras, ref m_DepthTextureStack, ref m_MergeTextureStack, m_BlitMaterial, m_MergeMaterial);
         renderer.EnqueuePass(m_CameraStackCameraStackDepthPass);
     }
 
@@ -333,32 +333,32 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
         return null;
     }
 
-    private static bool HasActiveCamera(List<bool> activeCameras)
+    private static bool HasSelectedCamera(List<bool> selectedCameras)
     {
-        if (activeCameras.Any(active => active)) return true;
+        if (selectedCameras.Any(selected => selected)) return true;
 
         Debug.LogWarning(LogPrefix + 
-                         "No active camera found. Please at least set one camera to active in the renderer feature.");
+                         "No selected camera found. Please at least set one camera to selected in the renderer feature.");
         return false;
     }
 
-    private void RefreshActiveCamerasListIfNeeded(UniversalAdditionalCameraData data)
+    private void RefreshSelectedCamerasListIfNeeded(UniversalAdditionalCameraData data)
     {
-        if (data.cameraStack.Count + 1 == m_ActiveCameras.Count) return;
+        if (data.cameraStack.Count + 1 == m_SelectedCameras.Count) return;
 
-        m_ActiveCameras.Clear();
+        m_SelectedCameras.Clear();
         for (int i = 0; i < data.cameraStack.Count + 1; i++)
         {
-            m_ActiveCameras.Add(true);
+            m_SelectedCameras.Add(true);
         }
     }
     
     private void RefreshStackIfNeeded()
     {
-        var activeCameraCount = m_ActiveCameras.Count(active => active);
+        var selectedCameraCount = m_SelectedCameras.Count(selected => selected);
 
-        if (activeCameraCount == m_DepthTextureStack.Count &&
-            activeCameraCount == m_MergeTextureStack.Count + 1) return;
+        if (selectedCameraCount == m_DepthTextureStack.Count &&
+            selectedCameraCount == m_MergeTextureStack.Count + 1) return;
         
         // Dispose of texture.
         foreach (var depthTexture in m_DepthTextureStack)
@@ -380,7 +380,7 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
         desc.msaaSamples = 1;
         
         // Setup depth stack.
-        for (int i = 0; i < activeCameraCount; i++)
+        for (int i = 0; i < selectedCameraCount; i++)
         {
             RTHandle depthTextureHandle = null;
             RenderingUtils.ReAllocateHandleIfNeeded(ref depthTextureHandle, desc, name: "_StackedDepthTexture" + (i + 1));
@@ -389,7 +389,7 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
         }
         
         // Setup merge stack.
-        for (int i = 0; i < activeCameraCount - 1; i++)
+        for (int i = 0; i < selectedCameraCount - 1; i++)
         {
             RTHandle mergeTextureHandle = null;
             RenderingUtils.ReAllocateHandleIfNeeded(ref mergeTextureHandle, desc, name: "_MergedDepthTexture" + (i + 1));
