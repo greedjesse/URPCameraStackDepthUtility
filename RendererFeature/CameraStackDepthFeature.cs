@@ -256,7 +256,21 @@ public class CameraStackDepthFeature : ScriptableRendererFeature
 
         m_CameraStack.Clear();
         m_CameraStack.Add(mainCamera);
-        m_CameraStack.AddRange(additionalData.cameraStack);
+
+        var nearClipPlane = mainCamera.nearClipPlane;
+        var farClipPlane = mainCamera.farClipPlane;
+        
+        foreach (var camera in additionalData.cameraStack)
+        {
+            m_CameraStack.Add(camera);
+            if (camera.nearClipPlane != nearClipPlane || camera.farClipPlane != farClipPlane)
+            {
+                Debug.Log("Some camera(s) in stack have different clipping plane, " +
+                          "please make sure all cameras have the same clipping planes.");
+                return;
+            }
+        }
+        
             
         RefreshSelectedCamerasListIfNeeded(additionalData);
         RefreshStackIfNeeded();
