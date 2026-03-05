@@ -38,7 +38,12 @@ You can access:
 2. Add `CameraStackDepthFeature`.  
 3. Assign the included `Blit To Screen` material (or your own).  
 4. Select the cameras you want depth access to.  
-5. Choose a merge mode.  
+5. Choose a merge mode.
+
+**!Impotant!**
+Please make sure stacked cameras have the same clipping planes.
+<img width="640" height="44" alt="image" src="https://github.com/user-attachments/assets/2f8ec71c-10a1-44f1-acc0-4c2fc890b8aa" />
+
 
 ---
 
